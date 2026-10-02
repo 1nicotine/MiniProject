@@ -60,7 +60,7 @@ Resource: `subscriptions`
 |`category`|`entertainment`, `music`, `cloud`, `education`, `other`|`?category=music`|
 |`active`|`true`, `false`|`?active=true`|
 |`q`|ข้อความค้นหาในชื่อ|`?q=net`|
-|`sort`, `order`|`price` / `nextPayment` / `name`, `asc` / `desc`|`?sort=price\&order=desc`|
+|`sort`, `order`|`price` / `nextPayment` / `name`, `asc` / `desc`|`?sort=price\\\&order=desc`|
 
 ### โครงสร้างข้อมูล
 
@@ -80,12 +80,12 @@ Resource: `subscriptions`
 
 ```bash
 # เพิ่มบริการ
-curl -X POST http://localhost:3000/api/subscriptions \\
-  -H "Content-Type: application/json" \\
+curl -X POST http://localhost:3000/api/subscriptions \\\\
+  -H "Content-Type: application/json" \\\\
   -d '{"name":"Spotify","price":129,"billing":"monthly","category":"music"}'
 
 # ข้อมูลไม่ครบ -> 400 พร้อมข้อความ error
-curl -i -X POST http://localhost:3000/api/subscriptions \\
+curl -i -X POST http://localhost:3000/api/subscriptions \\\\
   -H "Content-Type: application/json" -d '{"name":""}'
 
 # ไม่พบรายการ -> 404
@@ -99,13 +99,13 @@ curl -i -X DELETE http://localhost:3000/api/subscriptions/1
 
 |||
 |-|-|
-|หน้าหลักและสรุปค่าใช้จ่าย|!\[home](docs\\screenshots\\home.png)|
-|ค้นหาและกรอง|!\[filter](docs\\screenshots\\กรอกฟอร์มก่อนกดเพื่ม.png)|
-|เพิ่มบริการ|!\[add](docs\\screenshots\\หลังกดเพิ่ม.png)|
-|แก้ไขบริการ|!\[edit](docs\\screenshots\\แก้ไข.png)|
-|ลบบริการ|!\[delete](docs\\screenshots\\ลบ.png")|
-|ไม่พบผลลัพธ์|!\[empty](docs\\screenshots\\id ไม่อยู่ในserver.png)|
-|ทดสอบ API (404 / 400 / 204)|!\[api](docs\\screenshots\\POST ข้อมูลไม่ครบ ตอบ 400.png)(docs\\screenshots\\PATCH ID ที่ไม่พบ ตอบ 404.png")(docs\\screenshots\\กรองด้วยquery.png")(docs\\screenshots\\GET id.png")(\\docs\\screenshots\\id ไม่อยู่ในserver.png")(docs\\screenshots\\GET api.png")|
+|หน้าหลักและสรุปค่าใช้จ่าย|(docs\\screenshots\\home.png)|
+|ค้นหาและกรอง|(docs\\screenshots\\กรอกฟอร์มก่อนกดเพื่ม.png)|
+|เพิ่มบริการ|(docs\\screenshots\\หลังกดเพิ่ม.png)|
+|แก้ไขบริการ|(docs\\screenshots\\แก้ไข.png)|
+|ลบบริการ|(docs\\screenshots\\ลบ.png")|
+|ไม่พบผลลัพธ์|(docs\\screenshots\\id ไม่อยู่ในserver.png)|
+|ทดสอบ API (404 / 400 / 204)|(docs\\screenshots\\POST ข้อมูลไม่ครบ ตอบ 400.png)(docs\\screenshots\\PATCH ID ที่ไม่พบ ตอบ 404.png")(docs\\screenshots\\กรองด้วยquery.png")(docs\\screenshots\\GET id.png")(\\docs\\screenshots\\id ไม่อยู่ในserver.png")(docs\\screenshots\\GET api.png")|
 
 ## เทคโนโลยีที่ใช้
 
