@@ -1,32 +1,31 @@
 # Subscription Manager
 
-เว็บแอปจัดการบริการแบบสมัครสมาชิก (Netflix, Spotify, iCloud ฯลฯ) ทั้งรายเดือนและรายปี
-ดูยอดรวมต่อเดือน/ต่อปี สัดส่วนตามหมวด และวันครบกำหนดชำระ
-
-Mini Project: สร้างเว็บไซต์แบบ full-stack ด้วยการสร้าง REST API (Node.js + Express + HTML/CSS/JavaScript)
+เว็บแอปแบบ full-stack สำหรับจัดการบริการที่จ่ายเป็นรายเดือน/รายปี (Netflix, Spotify, iCloud ฯลฯ)
+สร้างด้วย **Node.js + Express.js** เชื่อมต่อกับหน้าเว็บฝั่งไคลเอนต์ที่เขียนด้วย **HTML, CSS และ JavaScript (fetch API)**
+มี REST API ครบ CRUD สำหรับ resource `subscriptions` และสรุปค่าใช้จ่ายต่อเดือน/ต่อปีของบริการที่ยังใช้งานอยู่
 
 ## ฟีเจอร์
 
-* เพิ่ม / แก้ไข / ลบ บริการ (CRUD ครบผ่าน REST API)
-* เปิด-ปิดสถานะ "ใช้งานอยู่" ได้ทันที
-* ค้นหาตามชื่อ กรองตามรอบชำระ หมวด และสถานะ เรียงตามราคา วันชำระ หรือชื่อ
-* สรุปค่าใช้จ่ายต่อเดือน/ต่อปี พร้อมแถบสัดส่วนตามหมวด
-* ป้ายเตือนวันครบกำหนดชำระ (อีก N วัน / เลยกำหนด)
-* อัปเดตหน้าเว็บด้วย `fetch()` โดยไม่รีเฟรชหน้า
+- เพิ่ม / แก้ไข / ลบ / เปิด-ปิดการใช้งาน ผ่าน `fetch()` โดยไม่โหลดหน้าใหม่
+- กรองด้วย query string (รอบชำระ, หมวด, สถานะ) ค้นหาชื่อ และเรียงลำดับ (ราคา, วันชำระ, ชื่อ)
+- สรุปค่าใช้จ่ายต่อเดือน/ต่อปี พร้อมแถบแสดงสัดส่วนค่าใช้จ่ายแต่ละหมวด
+- ป้ายนับถอยหลังวันชำระ (อีก N วัน / เลยกำหนด) ไอคอนและสีประจำหมวด ข้อความแจ้งเตือนหลังทำรายการ
+- รองรับโหมดมืด/สว่างอัตโนมัติ
 
 ## โครงสร้างโปรเจกต์
 
 ```
-.
-├── server/          # ฝั่งเซิร์ฟเวอร์ (Node.js + Express)   
-│   └── server.js
-│   └── data.json
-├── public/          # ฝั่งไคลเอนต์
+subscription-manager/
+├── server/
+│   ├── server.js        # Express + REST API
+│   └── data.json        # ที่เก็บข้อมูล (JSON file)
+├── public/
 │   ├── index.html
 │   ├── style.css
-│   └── app.js
+│   └── app.js           # เรียก API ด้วย fetch()
 ├── docs/
-│   └── screenshots/
+│   ├── report.pdf       # รายงานการออกแบบ REST API
+│   └── screenshots/     # ภาพหน้าจอ
 ├── package.json
 └── README.md
 ```
@@ -35,61 +34,54 @@ Mini Project: สร้างเว็บไซต์แบบ full-stack ด้
 
 ```bash
 npm install
-npm run dev
+npm run dev     # หรือ npm start
 ```
 
-จากนั้นเปิด http://localhost:3000
+เปิดเบราว์เซอร์ที่ http://localhost:3000
 
-## REST API
+## Data model
 
-Resource: `subscriptions`
+| Field | ชนิด | หมายเหตุ |
+|---|---|---|
+| id | number | สร้างอัตโนมัติ |
+| name | string | จำเป็น |
+| price | number | จำเป็น ตั้งแต่ 0 ขึ้นไป (บาท) |
+| billing | string | จำเป็น: `monthly` หรือ `yearly` |
+| category | string | `entertainment`, `music`, `cloud`, `education`, `other` (ค่าเริ่มต้น other) |
+| nextPayment | string | วันที่ชำระครั้งถัดไป YYYY-MM-DD |
+| active | boolean | เริ่มต้น true |
+| createdAt | string | ISO date ใส่โดยเซิร์ฟเวอร์ |
 
-|Method|Endpoint|หน้าที่|สถานะที่ตอบกลับ|
-|-|-|-|-|
-|GET|`/api/subscriptions`|ดึงรายการทั้งหมด (รองรับ query string)|200|
-|GET|`/api/subscriptions/:id`|ดึงรายการเดียว|200, 404 ถ้าไม่พบ|
-|POST|`/api/subscriptions`|เพิ่มรายการใหม่|201, 400 ถ้าข้อมูลไม่ครบ/ไม่ถูกต้อง|
-|PATCH|`/api/subscriptions/:id`|แก้ไขบางฟิลด์|200, 400, 404 ถ้าไม่พบ|
-|DELETE|`/api/subscriptions/:id`|ลบรายการ|204, 404 ถ้าไม่พบ|
+## API Endpoints
 
-### Query string ของ GET /api/subscriptions
+| Method | Path | คำอธิบาย | Status |
+|---|---|---|---|
+| GET | `/api/subscriptions` | ดึงทั้งหมด กรองด้วย `?billing=`, `?category=`, `?active=` ค้นหาชื่อด้วย `?q=` เรียงด้วย `?sort=price&order=desc` (sort: name, price, nextPayment) | 200 |
+| GET | `/api/subscriptions/:id` | ดึงรายการเดียว | 200 / 404 |
+| POST | `/api/subscriptions` | เพิ่มรายการ ต้องมี name, price, billing | 201 / 400 |
+| PATCH | `/api/subscriptions/:id` | แก้ไขบางส่วน (รวมถึงเปิด/ปิด active) | 200 / 400 / 404 |
+| DELETE | `/api/subscriptions/:id` | ลบรายการ | 204 / 404 |
 
-|พารามิเตอร์|ค่าที่รับ|ตัวอย่าง|
-|-|-|-|
-|`billing`|`monthly`, `yearly`|`?billing=yearly`|
-|`category`|`entertainment`, `music`, `cloud`, `education`, `other`|`?category=music`|
-|`active`|`true`, `false`|`?active=true`|
-|`q`|ข้อความค้นหาในชื่อ|`?q=net`|
-|`sort`, `order`|`price` / `nextPayment` / `name`, `asc` / `desc`|`?sort=price\\\&order=desc`|
-
-### โครงสร้างข้อมูล
-
-```json
-{
-  "id": 1,
-  "name": "Netflix",
-  "price": 419,
-  "billing": "monthly",
-  "category": "entertainment",
-  "nextPayment": "2026-10-15",
-  "active": true
-}
-```
-
-### ตัวอย่างการเรียก
+### ตัวอย่างการเรียกใช้
 
 ```bash
-# เพิ่มบริการ
-curl -X POST http://localhost:3000/api/subscriptions \\\\
-  -H "Content-Type: application/json" \\\\
-  -d '{"name":"Spotify","price":129,"billing":"monthly","category":"music"}'
+# ดึงทั้งหมด / กรอง / ค้นหา / เรียงลำดับ
+curl "http://localhost:3000/api/subscriptions"
+curl "http://localhost:3000/api/subscriptions?billing=monthly"
+curl "http://localhost:3000/api/subscriptions?q=net&sort=price&order=desc"
 
-# ข้อมูลไม่ครบ -> 400 พร้อมข้อความ error
-curl -i -X POST http://localhost:3000/api/subscriptions \\\\
-  -H "Content-Type: application/json" -d '{"name":""}'
+# ดึงรายการเดียว -> 200 / ไม่พบ -> 404
+curl -i http://localhost:3000/api/subscriptions/1
+curl -i http://localhost:3000/api/subscriptions/99
 
-# ไม่พบรายการ -> 404
-curl -i http://localhost:3000/api/subscriptions/9999
+# เพิ่ม -> 201 (ข้อมูลไม่ครบ -> 400)
+curl -i -X POST http://localhost:3000/api/subscriptions \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Disney+","price":199,"billing":"monthly","category":"entertainment"}'
+
+# แก้ไข -> 200 (ไม่พบ -> 404)
+curl -i -X PATCH http://localhost:3000/api/subscriptions/1 \
+  -H "Content-Type: application/json" -d '{"active":false}'
 
 # ลบ -> 204
 curl -i -X DELETE http://localhost:3000/api/subscriptions/1
@@ -97,35 +89,50 @@ curl -i -X DELETE http://localhost:3000/api/subscriptions/1
 
 ## ภาพหน้าจอ
 
-### หน้าหลักและสรุปค่าใช้จ่าย
+### หน้าหลัก
 ![หน้าหลัก](docs/screenshots/home.png)
 
-### กรอกฟอร์มก่อนกดเพิ่ม
-![กรอกฟอร์ม](docs/screenshots/add-form.png)
-
-### เพิ่มบริการสำเร็จ
-![หลังเพิ่ม](docs/screenshots/after-add.png)
+### เพิ่มบริการ
+![กรอกฟอร์มก่อนกดเพิ่ม](docs/screenshots/add-form.png)
+![หลังกดเพิ่ม](docs/screenshots/after-add.png)
 
 ### แก้ไขบริการ
-![แก้ไข](docs/screenshots/edit.png)
+![โหมดแก้ไข](docs/screenshots/edit.png)
+![หลังบันทึกการแก้ไข](docs/screenshots/after-edit.png)
 
 ### ลบบริการ
-![ลบ](docs/screenshots/delete.png)
+![ยืนยันก่อนลบ](docs/screenshots/delete-confirm.png)
+![หลังลบ](docs/screenshots/after-delete.png)
 
 ### ทดสอบ API
-| GET ทั้งหมด | GET ด้วย id | GET id ที่ไม่พบ (404) |
-|---|---|---|
-| ![](docs/screenshots/get-all.png) | ![](docs/screenshots/get-id.png) | ![](docs/screenshots/get-404.png) |
+**GET ทั้งหมด**
 
-### กรองด้วย query string
-![กรอง](docs/screenshots/filter-query.png)
+![GET ทั้งหมด](docs/screenshots/get-all.png)
 
-### POST ข้อมูลไม่ครบ (400)
-![400](docs/screenshots/post-400.png)
+**GET ด้วย id**
 
-### PATCH id ที่ไม่พบ (404)
-![404](docs/screenshots/patch-404.png)
+![GET id](docs/screenshots/get-id.png)
+
+**GET id ที่ไม่พบ (404)**
+
+![GET 404](docs/screenshots/get-404.png)
+
+**กรองด้วย query string**
+
+![กรองด้วย query](docs/screenshots/filter-query.png)
+
+**POST ข้อมูลไม่ครบ (400)**
+
+![POST 400](docs/screenshots/post-400.png)
+
+**PATCH id ที่ไม่พบ (404)**
+
+![PATCH 404](docs/screenshots/patch-404.png)
+
+**ตรวจข้อมูลฝั่งเบราว์เซอร์เมื่อไม่กรอกราคา**
+
+![validation](docs/screenshots/validation-browser.png)
+
 ## เทคโนโลยีที่ใช้
 
-Node.js, Express.js, HTML, CSS, JavaScript (fetch API) ไม่เรียก API ภายนอก
-
+Node.js, Express.js, HTML, CSS, JavaScript (fetch API) เรียกเฉพาะ API ของตัวเอง ไม่ดึงข้อมูลจาก API ภายนอก
