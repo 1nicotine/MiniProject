@@ -97,16 +97,34 @@ curl -i -X DELETE http://localhost:3000/api/subscriptions/1
 
 ## ภาพหน้าจอ
 
-|||
-|-|-|
-|หน้าหลักและสรุปค่าใช้จ่าย|(docs\\screenshots\\home.png)|
-|ค้นหาและกรอง|(docs\\screenshots\\กรอกฟอร์มก่อนกดเพื่ม.png)|
-|เพิ่มบริการ|(docs\\screenshots\\หลังกดเพิ่ม.png)|
-|แก้ไขบริการ|(docs\\screenshots\\แก้ไข.png)|
-|ลบบริการ|(docs\\screenshots\\ลบ.png")|
-|ไม่พบผลลัพธ์|(docs\\screenshots\\id ไม่อยู่ในserver.png)|
-|ทดสอบ API (404 / 400 / 204)|(docs\\screenshots\\POST ข้อมูลไม่ครบ ตอบ 400.png)(docs\\screenshots\\PATCH ID ที่ไม่พบ ตอบ 404.png")(docs\\screenshots\\กรองด้วยquery.png")(docs\\screenshots\\GET id.png")(\\docs\\screenshots\\id ไม่อยู่ในserver.png")(docs\\screenshots\\GET api.png")|
+### หน้าหลักและสรุปค่าใช้จ่าย
+![หน้าหลัก](docs/screenshots/home.png)
 
+### กรอกฟอร์มก่อนกดเพิ่ม
+![กรอกฟอร์ม](docs/screenshots/add-form.png)
+
+### เพิ่มบริการสำเร็จ
+![หลังเพิ่ม](docs/screenshots/after-add.png)
+
+### แก้ไขบริการ
+![แก้ไข](docs/screenshots/edit.png)
+
+### ลบบริการ
+![ลบ](docs/screenshots/delete.png)
+
+### ทดสอบ API
+| GET ทั้งหมด | GET ด้วย id | GET id ที่ไม่พบ (404) |
+|---|---|---|
+| ![](docs/screenshots/get-all.png) | ![](docs/screenshots/get-id.png) | ![](docs/screenshots/get-404.png) |
+
+### กรองด้วย query string
+![กรอง](docs/screenshots/filter-query.png)
+
+### POST ข้อมูลไม่ครบ (400)
+![400](docs/screenshots/post-400.png)
+
+### PATCH id ที่ไม่พบ (404)
+![404](docs/screenshots/patch-404.png)
 ## เทคโนโลยีที่ใช้
 
 Node.js, Express.js, HTML, CSS, JavaScript (fetch API) ไม่เรียก API ภายนอก
